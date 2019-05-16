@@ -1,0 +1,91 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link href="bootstrap.min.css" rel="stylesheet" />
+</head>
+<body class="bg-info">
+    <div class="container">
+        <div class="row mt-3 mb-2 text-center">
+            <div class="col-6">
+                <button type="button" class="btn btn-outline-dark" onclick="BinomialDistribution(prompt('Bir Sayı Giriniz'));">Binom Dağılımı</button>
+            </div>
+            <div class="col-6">
+                <button type="button" class="btn btn-outline-dark" onclick="PoissonDistribution(prompt('Bir Sayı Giriniz'), prompt('Bir Sayı Giriniz'));">Poisson Dağılımı</button>
+            </div>
+        </div>
+        <div class="row">
+            <div class="freeze-table" style="margin:0 auto;">
+                <table id="Distribution" class="table table-bordered text-center table-fixed bg-white">
+                    <thead class="thead-dark"></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <script src="jquery-3.0.0.min.js"></script>
+    <script src="freeze-table.js"></script>
+    <script src="bignumber.js"></script>
+    <script>
+        function Factorial(n) {
+            var f = [new BigNumber("1"), new BigNumber("1")];
+            var i = 2;
+            if (typeof f[n] != 'undefined')
+                return f[n];
+            var result = f[i - 1];
+            for (; i <= n; i++)
+                f[i] = result = result.multiply(i.toString());
+            return result;
+        }
+
+        function ClearTable() {
+            $("#Distribution thead").html("");
+            $("#Distribution tbody").html("");
+        }
+
+        function BinomialDistribution(n) {
+            ClearTable();
+            var value, text;
+            text = "<tr><th scope='col' rowspan='2'>n</th><th scope='col' rowspan='2'>x</th><th scope='col' colspan='11'>p</th></tr><tr><th>0.05</th><th>0.1</th><th>0.2</th><th>0.3</th><th>0.4</th><th>0.5</th><th>0.6</th><th>0.7</th><th>0.8</th><th>0.9</th><th>0.95</th></tr>";
+            $("#Distribution thead").append(text);
+            text = "";
+            for (var a = 2; a <= n; a++) {
+                for (var b = 0; b <= a; b++) {
+                    if (b == 0)
+                        text += "<tr><td rowspan='" + (a + 1) + "'>" + a + "</td><td>" + b + "</td>";
+                    else
+                        text += "<tr><td>" + b + "</td>";
+                    for (var c = 0.05; c < 1; c += 0.05) {
+                        if (c == 0.05 || c.toFixed(3) == 0.95 || c.toFixed(3) * 100 % 2 === 0) {
+                            value = ((Factorial(a) / (Factorial(b) * Factorial(a - b))) * Math.pow(c, b) * Math.pow((1 - c), (a - b))).toFixed(3);
+                            text += "<td>" + (value == 0 ? " " : value) + "</td>";
+                            if (c + 0.05 > 1)
+                                text += "</tr>";
+                        }
+                    }
+                }
+            }
+            $("#Distribution tbody").append(text);
+            $(".freeze-table").freezeTable();
+        }
+
+        function PoissonDistribution(n, x) {
+            ClearTable();
+            var thead = "<tr><th>x</th>", tbody = "<tr>";
+            for (var a = 1; a <= n; a++) {
+                tbody += "<td>" + a + "</td>";
+                for (var b = 0.1; b.toFixed(1) <= parseFloat(x); b += 0.1) {
+                    if (a == 1) 
+                        thead += "<th>" + b.toFixed(1) + "</th>" + ((b + 0.1).toFixed(1) > parseFloat(x) == true ? "</tr>" : "");
+                    tbody += "<td>" + ((Math.pow(Math.E, (b * -1)) * Math.pow(b, a)) / Factorial(a)).toFixed(4) + "</td>" + ((b + 0.1).toFixed(1) > parseFloat(x) == true ? "</tr>" : "");
+                }
+            }
+            $("#Distribution thead").append(thead);
+            $("#Distribution tbody").append(tbody);
+            $(".freeze-table").freezeTable({ 'columnNum': 1 });
+        }
+    </script>
+</body>
+</html>
